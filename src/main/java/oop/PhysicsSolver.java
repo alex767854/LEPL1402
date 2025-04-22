@@ -14,11 +14,13 @@ public class PhysicsSolver {
      **/
     public static class Slot {
 
+        public double val;
         /**
          * The constructor must initialize the slot so that it
          * contains no value.
          **/
         Slot() {
+            this.val = 0.0;
         }
 
         /**
@@ -30,7 +32,7 @@ public class PhysicsSolver {
          **/
         static public final boolean areSameDoubles(double a,
                                                    double b) {
-            final double THRESHOLD = 0.0001; 
+            final double THRESHOLD = 0.0001;
             return Math.abs(a - b) < THRESHOLD;
         }
 
@@ -39,7 +41,7 @@ public class PhysicsSolver {
          * @return <code>true</code> iff. the slot contains a value.
          **/
         public boolean hasValue() {
-             return false;
+            return this.val!=0.0;
         }
 
         /**
@@ -48,7 +50,8 @@ public class PhysicsSolver {
          * @throws RuntimeException if the slot doesn't contain a value.
          **/
         public double getValue() {
-             throw new RuntimeException("slot without a value");
+            if (!hasValue()) throw new RuntimeException("slot without a value");
+            return this.val;
         }
 
         /**
@@ -64,7 +67,12 @@ public class PhysicsSolver {
          * value in the slot.
          **/
         public boolean setValue(double value) {
-             return false;
+            if(hasValue() && areSameDoubles(value,getValue())) return false;
+            else if (hasValue()) throw new RuntimeException();
+            else {
+                this.val = value;
+                return true;
+            }
         }
 
         /**
@@ -72,6 +80,7 @@ public class PhysicsSolver {
          * method, the slot doesn't contain a value.
          **/
         public void clearValue() {
+            this.val = 0.0;
         }
     }
 
@@ -170,15 +179,30 @@ public class PhysicsSolver {
 
         @Override
         public boolean update() {
-			 return false;
+            if (product_.hasValue() && factor1_.hasValue() && factor2_.hasValue()) return false;
+            else if (product_.hasValue() && factor1_.hasValue()) {
+                return factor2_.setValue(product_.getValue()/ factor1_.getValue());
+            }
+            else if (product_.hasValue() && factor2_.hasValue()) {
+                return factor1_.setValue(product_.getValue()/ factor2_.getValue());
+            }
+            else if (factor1_.hasValue() && factor2_.hasValue()) {
+                return product_.setValue(factor1_.getValue()* factor2_.getValue());
+            }
+            else {
+                return false;
+            }
         }
 
         @Override
         public void clearValues() {
+            product_.clearValue();
+            factor1_.clearValue();
+            factor2_.clearValue();
         }
     }
 
-  
+
     /**
      * This class represents the square operation, i.e. the
      * mathematical relation of the form <code>a = b^2</code>. This
@@ -231,11 +255,21 @@ public class PhysicsSolver {
 
         @Override
         public boolean update() {
-			 return false;
+            if (square_.hasValue()) {
+                return number_.setValue(Math.sqrt(square_.getValue()));
+            }
+            else if (number_.hasValue()){
+                return square_.setValue(Math.pow(number_.getValue(),2));
+            }
+            else {
+                return false;
+            }
         }
 
         @Override
         public void clearValues() {
+            number_.clearValue();
+            square_.clearValue();
         }
     }
 
@@ -250,7 +284,7 @@ public class PhysicsSolver {
     public static void solve(Relation r1,
                              Relation r2) {
         while (r1.update() ||
-               r2.update()) {
+                r2.update()) {
             // Repeat until convergence
         }
     }
@@ -268,8 +302,8 @@ public class PhysicsSolver {
                              Relation r2,
                              Relation r3) {
         while (r1.update() ||
-               r2.update() ||
-               r3.update()) {
+                r2.update() ||
+                r3.update()) {
             // Repeat until convergence
         }
     }
@@ -289,9 +323,9 @@ public class PhysicsSolver {
                              Relation r3,
                              Relation r4) {
         while (r1.update() ||
-               r2.update() ||
-               r3.update() ||
-               r4.update()) {
+                r2.update() ||
+                r3.update() ||
+                r4.update()) {
             // Repeat until convergence
         }
     }

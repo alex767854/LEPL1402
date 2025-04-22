@@ -3,10 +3,7 @@ package parallelization;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * In this exercise, you have to count the number of prime numbers in
@@ -43,7 +40,7 @@ public class CountPrimeNumbers {
             return counter;
         }
     }
-    
+
 
     /**
      * Check whether the given number is prime. A prime is an integer
@@ -56,7 +53,13 @@ public class CountPrimeNumbers {
      */
     public static boolean isPrime(int number) {
         // TODO
-         return true;
+        if (number <= 1) return false;
+        for (int i =2;i<(number/2)+1;i++){
+            if (number%i == 0){
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -71,7 +74,11 @@ public class CountPrimeNumbers {
     public static int countPrimesInInterval(int start,
                                             int end) {
         // TODO
-         return 0;
+        int cnt = 0;
+        for (int i = start;i<end;i++){
+            if(isPrime(i)) cnt++;
+        }
+        return cnt;
     }
 
 
@@ -90,11 +97,13 @@ public class CountPrimeNumbers {
         CountPrimesCallable(int start,
                             int end) {
             // TODO
+            this.start = start;
+            this.end = end;
         }
 
         public Integer call() {
             // TODO
-             return 0;
+            return countPrimesInInterval(start,end);
         }
     }
 
@@ -104,6 +113,10 @@ public class CountPrimeNumbers {
      **/
     public static class CountPrimesRunnable implements Runnable {
 
+        private int start;
+        private int end;
+        private int result;
+
         /**
          * Constructor of the runnable.
          * @param start Start of the interval (inclusive).
@@ -112,10 +125,13 @@ public class CountPrimeNumbers {
         CountPrimesRunnable(int start,
                             int end) {
             // TODO
+            this.start = start;
+            this.end = end;
         }
 
         public void run() {
             // TODO
+            result = countPrimesInInterval(start,end);
         }
 
         /**
@@ -124,7 +140,7 @@ public class CountPrimeNumbers {
          **/
         public int getResult() {
             // TODO
-             return 0;
+            return result;
         }
     }
 
@@ -134,6 +150,10 @@ public class CountPrimeNumbers {
      * and that add this number to a shared counter.
      **/
     public static class CountPrimesSharedCounter implements Runnable {
+
+        private SharedCounter target;
+        private int start;
+        private int end;
 
         /**
          * Constructor of the runnable.
@@ -146,10 +166,14 @@ public class CountPrimeNumbers {
                                  int start,
                                  int end) {
             // TODO
+            this.target = target;
+            this.start = start;
+            this.end = end;
         }
 
         public void run() {
             // TODO
+            target.add(countPrimesInInterval(start,end));
         }
     }
 
@@ -185,7 +209,24 @@ public class CountPrimeNumbers {
                                               int end,
                                               int countIntervals) throws InterruptedException, ExecutionException {
         // TODO
-         return 0;
+        if (countIntervals <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        int intervals = end/countIntervals;
+        List<Future<Integer>> futures = new ArrayList<>();
+        for (int i = 0; i<countIntervals;i++){
+            int a = i*intervals;
+            int b;
+            if (i==countIntervals-1) b = end;
+            else b = (i+1)*intervals;
+            futures.add(threadPool.submit(new CountPrimesCallable(a,b)));
+        }
+        int cnt = 0;
+        for (Future<Integer> futur : futures){
+            cnt+=futur.get();
+        }
+        return cnt;
     }
 
 
@@ -197,7 +238,31 @@ public class CountPrimeNumbers {
                                               int end,
                                               int countIntervals) throws InterruptedException, ExecutionException {
         // TODO
-         return 0;
+        if (countIntervals <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        int intervals = end/countIntervals;
+        List<Future> futures = new ArrayList<>();
+        List<CountPrimesRunnable> runs = new ArrayList<>();
+        for (int i = 0; i<countIntervals;i++){
+            int a = i*intervals;
+            int b;
+            if (i==countIntervals-1) b = end;
+            else b = (i+1)*intervals;
+            CountPrimesRunnable c = new CountPrimesRunnable(a,b);
+            runs.add(c);
+            futures.add(threadPool.submit(c));
+        }
+        int cnt = 0;
+        for (Future futur : futures){
+            futur.get();
+        }
+        for (CountPrimesRunnable run : runs){
+            cnt+= run.getResult();
+        }
+
+        return cnt;
     }
 
 
@@ -212,5 +277,23 @@ public class CountPrimeNumbers {
                                                     int end,
                                                     int countIntervals) throws InterruptedException, ExecutionException {
         // TODO
+        if (countIntervals <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        int intervals = end/countIntervals;
+        target.set(0);
+        List<Future> futures = new ArrayList<>();
+        for (int i = 0; i<countIntervals;i++){
+            int a = i*intervals;
+            int b;
+            if (i==countIntervals-1) b = end;
+            else b = (i+1)*intervals;
+            futures.add(threadPool.submit(new CountPrimesSharedCounter(target,a,b)));
+        }
+
+        for (Future futur : futures){
+            futur.get();
+        }
     }
 }

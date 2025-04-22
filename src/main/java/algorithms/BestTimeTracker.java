@@ -1,6 +1,8 @@
 package algorithms;
 
 import java.util.*;
+import java.util.HashMap;
+
 
 /**
  * This is a data structure for tracking the best times
@@ -22,12 +24,15 @@ import java.util.*;
 public class BestTimeTracker implements Iterable<String> {
 
     // TODO: add instance variables of your choice
+    public HashMap<String,Double> liste = new HashMap<>();
+    public int verif = 0;
 
     /**
      * Constructs an empty BestTimeTracker.
      */
     public BestTimeTracker() {
         // TODO: implement the constructor
+
     }
 
     /**
@@ -40,6 +45,15 @@ public class BestTimeTracker implements Iterable<String> {
      */
     public void addTime(String participant, double time) {
         // TODO
+        verif++;
+        if (liste.containsKey(participant)){
+            if (time<liste.get(participant)){
+                liste.put(participant,time);
+            }
+        }
+        else{
+            liste.put(participant,time);
+        }
     }
 
     /**
@@ -49,7 +63,7 @@ public class BestTimeTracker implements Iterable<String> {
      * @return the best time recorded for the participant, or null if the participant has no recorded time
      */
     public Double getBestTime(String participant) {
-         return -1.0;  // TODO
+        return liste.get(participant);  // TODO
     }
 
     /**
@@ -66,7 +80,48 @@ public class BestTimeTracker implements Iterable<String> {
      */
     @Override
     public Iterator<String> iterator() {
-         return null;  // TODO
+        String [] s = liste.keySet().toArray(new String[]{});
+        insertionSort(s);
+        return new BaseIterator(s);
+    }
+
+    public class BaseIterator implements Iterator<String>{
+        public int verif = BestTimeTracker.this.verif;
+        public int index =0;
+        public String [] s;
+
+        public BaseIterator(String [] s){
+            this.s = s;
+        }
+
+        @Override
+        public boolean hasNext(){
+            if(verif!=BestTimeTracker.this.verif) throw new ConcurrentModificationException();
+            return index<s.length;
+        }
+
+        @Override
+        public String next(){
+            if(verif!=BestTimeTracker.this.verif) throw new ConcurrentModificationException();
+            return s[index++];
+        }
+    }
+
+
+
+
+    public void insertionSort(String[] arr) {
+        for (int i = 1; i < arr.length; i++) {
+            String key = arr[i];
+            int j = i - 1;
+            // Move elements of arr[0..i-1], that are greater than key,
+            // to one position ahead of their current position
+            while (j >= 0 && liste.get(arr[j]) > liste.get(key)) {
+                arr[j + 1] = arr[j];
+                j = j - 1;
+            }
+            arr[j + 1] = key;
+        }
     }
 
     public static void main(String[] args) {

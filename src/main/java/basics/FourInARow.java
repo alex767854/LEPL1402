@@ -24,10 +24,20 @@ public class FourInARow {
     private static final char EMPTY = '-';
     private static final char[] PLAYERS = {'X', 'O'};
 
-     // add your own instance variables here
+    // add your own instance variables here
+
+    private static char[][] cadre;
 
     public FourInARow() {
-         // add your own code here
+        // add your own code here
+        //initialiser le cadre vide
+        cadre = new char[ROWS][COLUMNS];
+        for (int i = 0; i<ROWS; i++){
+            for (int j = 0 ; j<COLUMNS;j++){
+                cadre[i][j] = EMPTY;
+            }
+        }
+
     }
 
     /**
@@ -37,7 +47,20 @@ public class FourInARow {
      * @throws IllegalArgumentException if j is not a valid column index or if the column is full or if the player is not X or O
      */
     public void play(int j, char player) {
-         // add your own code here
+        // add your own code here
+        //exceptions
+        if (j<0 || j>COLUMNS -1 || player != PLAYERS[0] && player != PLAYERS[1]){
+            throw new IllegalArgumentException();
+        }
+        //faire tomber le jeton
+        for (int i =0; i<ROWS;i++){
+            if (cadre[ROWS -1 -i][j] == EMPTY){
+                cadre[ROWS -1 -i][j] = player ;
+                return;
+            }
+        }
+        //si la colonne est pleine
+        throw new IllegalArgumentException();
     }
 
 
@@ -48,7 +71,62 @@ public class FourInARow {
      * @throws IllegalArgumentException if the player is not X or O
      */
     public boolean hasWon(char player) {
-         // add your own code here
+        // add your own code here
+        if (player != PLAYERS[0] && player != PLAYERS[1]){
+            throw new IllegalArgumentException();
+        }
+        // check lignes
+        for (int i = 0;i<ROWS;i++){
+            for (int j = 0 ; j < COLUMNS - 3;j++){
+                for (int k = 0 ; k<4;k++){
+                    if (cadre[i][j+k] !=player){
+                        break;
+                    }
+                    else if (k==3){
+                        return true;
+                    }
+                }
+
+            }
+        }
+        // check colonnes
+        for (int i = 0;i<COLUMNS;i++){
+            for (int j = 0 ; j < ROWS - 3;j++){
+                for (int k = 0 ; k<4;k++){
+                    if (cadre[j+k][i] !=player){
+                        break;
+                    }
+                    else if (k==3){
+                        return true;
+                    }
+                }
+            }
+        }
+        // check diagonales
+        for (int i = 0;i<4;i++){
+            for (int j = 3 ; j < ROWS;j++){
+                for (int k = 0 ; k<4;k++){
+                    if (cadre[j-k][i+k] !=player){
+                        break;
+                    }
+                    else if (k==3){
+                        return true;
+                    }
+                }
+            }
+        }
+        for (int i = 0;i<4;i++){
+            for (int j = 0 ; j < ROWS-3;j++){
+                for (int k = 0 ; k<4;k++){
+                    if (cadre[j+k][i+k] !=player){
+                        break;
+                    }
+                    else if (k==3){
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 }

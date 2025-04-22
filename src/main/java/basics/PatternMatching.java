@@ -18,7 +18,7 @@ public class PatternMatching {
      **/
     public static int find(String pattern,
                            String value) {
-         return -1;
+        return value.indexOf(pattern);
     }
 
 }

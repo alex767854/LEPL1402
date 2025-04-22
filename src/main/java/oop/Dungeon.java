@@ -1,8 +1,13 @@
 package oop;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Dungeon {
     // TODO
     // You can add new fields and methods here.
+    public String[][] grid;
+    public List<Dungeon> doors = new ArrayList<>();
 
 
     /**
@@ -20,10 +25,16 @@ public class Dungeon {
      * The horizontal arrow represents the x-axis. The vertical arrow
      * represents the y-axis.
      * You can assume that dimensionX>0 and dimensionY>0.
-    **/
+     **/
     Dungeon(int dimensionX, int dimensionY) {
         // TODO
         // Write your code here
+        this.grid = new String[dimensionY][dimensionX];
+        for(int i =0;i<dimensionY;i++){
+            for (int j = 0; j<dimensionX;j++){
+                grid[i][j]="#";
+            }
+        }
     }
 
     /*
@@ -78,6 +89,7 @@ public class Dungeon {
     void putTrap(int x, int y) {
         // TODO
         // Write your code here
+        grid[y][x]="trap";
     }
 
     /**
@@ -91,6 +103,8 @@ public class Dungeon {
     void putHealthFountain(int x, int y, int hf) {
         // TODO
         // Write your code here
+        String buff = String.valueOf(hf);
+        grid[y][x]="heal "+ buff;
     }
 
     /**
@@ -103,6 +117,8 @@ public class Dungeon {
     void putDoor(int x, int y, Dungeon otherDungeon) {
         // TODO
         // Write your code here
+        doors.add(otherDungeon);
+        grid[y][x]="door "+ String.valueOf(doors.size()-1);
     }
 
     public enum Direction { North, West, South, East }
@@ -138,5 +154,18 @@ public class Dungeon {
     public static void movePlayer(Player player, Direction direction) {
         // TODO
         // Write your code here
+
+        if (direction.equals(Direction.North))player.y--;
+        else if (direction.equals(Direction.South))player.y++;
+        else if (direction.equals(Direction.East))player.x++;
+        else if (direction.equals(Direction.West))player.x--;
+        String cell = player.dungeon.grid[player.y][player.x];
+        if(cell.equals("trap")) player.healthPoints--;
+        else if (cell.split(" ")[0].equals("heal")) player.healthPoints += Integer.parseInt(cell.split(" ")[1]);
+        else if (cell.split(" ")[0].equals("door")){
+            player.dungeon = player.dungeon.doors.get(Integer.parseInt(cell.split(" ")[1]));
+            player.y =0;
+            player.x =0;
+        }
     }
 }

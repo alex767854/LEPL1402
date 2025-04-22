@@ -1,8 +1,14 @@
 package parallelization;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 /**
  * You are part of the organizing committee of the 2024 Summer Olympics in Paris.
@@ -51,13 +57,14 @@ public class StadiumStatistics {
      * category of ages (cf. the "AgeCategory" enumeration) with the number of supporters of this age.
      */
     static public class AgeHistogram {
-         // TODO - Add the private members of your data structure at this point
+        // TODO - Add the private members of your data structure at this point
+        public int[] liste = new int[9];
 
         /**
          * Your constructor. Initially, the number of supporters must be zero for each age category.
          */
         AgeHistogram() {
-             // TODO (only if your data structure requires an initialization)
+            // TODO (only if your data structure requires an initialization)
         }
 
         /**
@@ -69,7 +76,17 @@ public class StadiumStatistics {
          * requested age category does not exist in the "AgeCategory" enumeration.
          */
         public int getNumberOfSupporters(AgeCategory category) {
-             return -1;  // TODO
+            boolean ins = true;
+            int index = 0;
+            for (AgeCategory enuma : AgeCategory.values()){
+                if (enuma.equals(category)){
+                    ins = false;
+                    break;
+                }
+                index++;
+            }
+            if (ins)throw new IllegalArgumentException();
+            return liste[index];  // TODO
         }
 
         /**
@@ -80,7 +97,10 @@ public class StadiumStatistics {
          * (i.e., if the age is a negative number).
          */
         public void addSupporter(int age) {
-             // TODO
+            // TODO
+            if (age<0)throw new IllegalArgumentException();
+            if (age<80) liste[age/10]++;
+            else liste[8]++;
         }
 
         /**
@@ -93,7 +113,11 @@ public class StadiumStatistics {
          */
         static public AgeHistogram combine(AgeHistogram histogram1,
                                            AgeHistogram histogram2) {
-             return null;  // TODO
+            AgeHistogram histogram3 = new AgeHistogram();
+            for (int i =0;i<9;i++){
+                histogram3.liste[i]=histogram1.liste[i]+histogram2.liste[i];
+            }
+            return histogram3;
         }
     }
 
@@ -124,8 +148,11 @@ public class StadiumStatistics {
         if (startIndex < 0 || startIndex > endIndex || endIndex > supporters.length) {
             throw new IllegalArgumentException();
         }
-
-         return null;  // TODO
+        if (startIndex==endIndex)return new AgeHistogram();
+        AgeHistogram histogram = new AgeHistogram();
+        List<Integer> liste1 = Arrays.stream(supporters,startIndex,endIndex).filter(x->x.getNationality()==nationality).map(x->x.getAge()).collect(Collectors.toList());
+        for (Integer inte : liste1) histogram.addSupporter(inte);
+        return histogram;  // TODO
     }
 
     /**
@@ -149,6 +176,17 @@ public class StadiumStatistics {
     public static AgeHistogram computeAgeHistogramParallel(ExecutorService executorService,
                                                            Supporter[] supporters,
                                                            String nationality) {
-         return null;  // TODO
+        List<Future<AgeHistogram>> futures = new ArrayList<>();
+        futures.add(executorService.submit(()->computeAgeHistogramSequential(supporters,nationality,0, supporters.length/2)));
+        futures.add(executorService.submit(()->computeAgeHistogramSequential(supporters,nationality,supporters.length/2, supporters.length)));
+        AgeHistogram result;
+        try {
+            result = AgeHistogram.combine(futures.get(0).get(),futures.get(1).get());
+        } catch (InterruptedException e) {
+            return null;
+        } catch (ExecutionException e) {
+            return null;
+        }
+        return result;
     }
 }

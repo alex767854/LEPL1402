@@ -1,6 +1,7 @@
 package algorithms;
+import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.NoSuchElementException;
 
 
 /**
@@ -25,16 +26,49 @@ public class StringIterator {
      */
     public static IterableString makeIterableString(String s) {
         // TODO return an instance of your class that implements the interface
-         return null;
+        return new IterableString1(s);
     }
 
     /**
      * An IterableString permit to iterate on each character of a
      * string one by one from left to right
      */
-    public interface IterableString extends Iterable<Character> {}
+    public interface IterableString extends Iterable<Character> {
+    }
 
     // TODO implement the interface IterableString as an (inner) class
+
+    public static class IterableString1 implements IterableString {
+        public String s;
+
+        public IterableString1 (String s){
+            this.s = s;
+        }
+
+        @Override
+        public Iterator<Character> iterator() {
+            return new BaseIterator();
+        }
+
+        public class BaseIterator implements Iterator<Character> {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext(){
+                return index < s.length();
+            }
+
+            @Override
+            public Character next(){
+                if (!hasNext()){
+                    throw new NoSuchElementException();
+                }
+                return s.charAt(index++);
+            }
+        }
+    }
+
+
 
 
 }

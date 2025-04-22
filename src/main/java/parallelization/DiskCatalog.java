@@ -1,8 +1,6 @@
 package parallelization;
 
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +14,7 @@ import java.util.concurrent.Future;
  * collection of albums.
  **/
 public class DiskCatalog {
-    
+
     /**
      * Interface representing one disk in the catalog.
      **/
@@ -87,7 +85,7 @@ public class DiskCatalog {
             if (skip < 0) {
                 throw new IllegalArgumentException();
             }
-        
+
             this.iterator = iterator;
             this.bandName = bandName;
             this.diskTitle = diskTitle;
@@ -97,7 +95,21 @@ public class DiskCatalog {
 
         public Integer call() {
             // TODO
-             return -1;
+            int cnt = 0;
+            while (iterator.hasNext()){
+                Disk current = iterator.next();
+                if (!bandName.isPresent() || current.getBandName().equals(bandName.get())){
+                    if (!diskTitle.isPresent() || current.getDiskTitle().equals(diskTitle.get())){
+                        if (!year.isPresent() || current.getYear()== year.get()){
+                            synchronized (this){
+                                cnt++;
+                            }
+                        }
+                    }
+                }
+                for (int i =0 ; i<skip && iterator.hasNext(); i++) iterator.next();
+            }
+            return cnt;
         }
     }
 
@@ -107,7 +119,7 @@ public class DiskCatalog {
      * (provided as a Java Iterable) that match some criteria, using
      * multithreading. Check out the constructor of
      * "CountMatchingDisksCallable" for a description of the criteria.
-     * 
+     *
      * You must use the thread pool that is provided in the argument
      * "threadPool", and you must create a number of callables that is
      * equal to argument "countCallables".
@@ -128,6 +140,23 @@ public class DiskCatalog {
                                          ExecutorService threadPool,
                                          int countCallables) throws InterruptedException, ExecutionException {
         // TODO
-         return -1;
+        if (countCallables <= 0) {
+            throw new IllegalArgumentException();
+        }
+        int skip = countCallables -1;
+        List<Future<Integer>> futures = new ArrayList<>();
+        for( int i = 0; i<countCallables;i++){
+            Iterator<Disk> iterator = disks.iterator();
+            for (int j =0;j<i;j++){
+                if (iterator.hasNext()) iterator.next();
+            }
+
+            futures.add(threadPool.submit(new CountMatchingDisksCallable(iterator, bandName,diskTitle,year,skip)));
+        }
+        int cnt =0;
+        for (Future<Integer> future : futures){
+            cnt+= future.get();
+        }
+        return cnt;
     }
 }

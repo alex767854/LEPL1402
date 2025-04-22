@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -170,7 +171,7 @@ public class StudentStream {
          * "null" if no test must be done on the first name.
          **/
         private Predicate<String> firstNamePredicate;
-        
+
         /**
          * The predicate for the last name of the students. Might be
          * "null" if no test must be done on the last name.
@@ -212,7 +213,17 @@ public class StudentStream {
          **/
         public boolean isMatch(Student student) {
             // TODO
-             return false;
+            if (firstNamePredicate != null && !firstNamePredicate.test(student.getFirstName())) return false;
+            if (lastNamePredicate != null && !lastNamePredicate.test(student.getLastName())) return false;
+            if (sectionPredicate != null && !sectionPredicate.test(student.getSection())) return false;
+
+            for (CourseCondition courseCondition : courseConditions) {
+                if (!student.hasGrade(courseCondition.getCourse()) ||
+                        !courseCondition.getValuePredicate().test(student.getGrade(courseCondition.getCourse())))
+                    return false;
+            }
+            return true;
+
         }
     }
 
@@ -259,7 +270,7 @@ public class StudentStream {
     public static Stream<Student> findAll(Stream<Student> students,
                                           StudentConditions conditions) {
         // TODO
-         return null;
+        return students.filter(x->conditions.isMatch(x));
     }
 
 
@@ -271,7 +282,7 @@ public class StudentStream {
     public static Student findFirst(Stream<Student> students,
                                     StudentConditions conditions) {
         // TODO
-         return null;
+        return findAll(students,conditions).findFirst().orElse(null);
     }
 
 
@@ -283,7 +294,7 @@ public class StudentStream {
                                  StudentConditions conditions,
                                  long n) {
         // TODO
-         return false;
+        return findAll(students,conditions).count()>=n;
     }
 
 
@@ -296,7 +307,7 @@ public class StudentStream {
                                                  StudentConditions conditions,
                                                  Comparator<Student> comparator) {
         // TODO
-         return null;
+        return findAll(students,conditions).sorted(comparator);
     }
 
 
@@ -307,7 +318,7 @@ public class StudentStream {
      **/
     public static Stream<Student> findSecondAndThirdTopStudentForGivenCourse(Stream<Student> students, String name) {
         // TODO
-         return null;
+        return students.sorted((a,b)->(int) Double.compare(b.getGrade(name),a.getGrade(name))).skip(1).limit(2);
     }
 
 
@@ -317,7 +328,8 @@ public class StudentStream {
      **/
     public static Stream<StudentAverage> computeAverageForStudentInSection(Stream<Student> students, int section) {
         // TODO
-         return null;
+        return students.filter(x->x.getSection()==section)
+                .map(x->new StudentAverage(x.getFirstName(),x.getLastName(),x.getGradesStream().map(a->a.getValue()).mapToDouble(b-> (double) b).average().orElse(0.0)));
     }
 
 
@@ -327,7 +339,7 @@ public class StudentStream {
      **/
     public static long getNumberOfSuccessfulStudents(Stream<Student> students) {
         // TODO
-         return 0;
+        return students.filter(x->x.getGradesStream().filter(a->a.getValue()>10).count()==x.getGradesStream().count()).count();
     }
 
 
@@ -338,7 +350,8 @@ public class StudentStream {
      **/
     public static Student findLastInLexicographicOrder(Stream<Student> students) {
         // TODO
-         return null;
+        List<Student> liste = students.sorted(Comparator.comparing(Student::getLastName).thenComparing(Student::getFirstName)).collect(Collectors.toList());
+        return liste.get(liste.size()-1);
     }
 
 
@@ -348,6 +361,6 @@ public class StudentStream {
      **/
     public static double getFullSum(Stream<Student> students) {
         // TODO
-         return 0;
+        return students.map(x->x.getGradesStream().map(a->a.getValue()).reduce(0.0,(a,b)->a+b)).reduce(0.0,(a,b)->a+b);
     }
 }

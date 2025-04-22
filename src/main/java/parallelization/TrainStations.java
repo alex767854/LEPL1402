@@ -1,6 +1,10 @@
 package parallelization;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -78,8 +82,16 @@ public class TrainStations {
         if (station1 == null || station2 == null) {
             throw new IllegalArgumentException();
         }
+        if (!station1.isPresent() && !station2.isPresent()) {
+            return Optional.empty();
+        }
+        if (!station1.isPresent())return station2;
+        else if (!station2.isPresent()) return station1;
 
-         return null;  // TODO
+        else {
+            return distanceFunction.compute(passenger,station1.get().getLocation())< distanceFunction.compute(passenger,station2.get().getLocation()) ? station1 : station2 ;
+        }
+        // TODO
     }
 
 
@@ -111,8 +123,7 @@ public class TrainStations {
         if (start < 0 || start > end || end > stations.length) {
             throw new IllegalArgumentException();
         }
-
-         return null;  // TODO
+        return Arrays.stream(stations).limit(end).skip(start).map(Optional::of).reduce((a,b)->getClosestStation(passenger,distanceFunction,a,b)).orElse(Optional.empty());  // TODO
     }
 
 
@@ -141,6 +152,35 @@ public class TrainStations {
                                                                DistanceFunction distanceFunction,
                                                                Station[] stations,
                                                                ExecutorService executorService) {
-         return null;  // TODO
+        final int half = stations.length/2;
+        List<Future<Optional<Station>>> futures = new ArrayList<>();
+        for (int i = 0; i<2;i++){
+            final int start;
+            final int end;
+            if (i ==0){
+                start = 0;
+                end = half;
+            }
+            else{
+                start = half;
+                end = stations.length ;
+            }
+            futures.add(executorService.submit(new Callable<Optional<Station>>() {
+                @Override
+                public Optional<Station> call() throws Exception {
+                    return findClosestStationSequential(passenger,distanceFunction,stations,start,end);
+                }
+            }));
+
+        }
+        Optional<Station> result;
+        try {
+            result = getClosestStation(passenger,distanceFunction,futures.get(0).get(),futures.get(1).get());
+        } catch (ExecutionException e) {
+            return null;
+        } catch (InterruptedException e) {
+            return null;
+        }
+        return result;
     }
 }

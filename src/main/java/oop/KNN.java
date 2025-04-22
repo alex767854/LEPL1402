@@ -131,9 +131,63 @@ public class KNN {
      * @return the prediction of success. True if the number of successes
      *         among the k most similar students is > k/2, false otherwise
      */
+
+
     public static boolean predictSuccess(Student [] students, double[] grades, int k) {
         // TODO
-         return false;
+        int sum = 0;
+        mergeSort(students,grades);
+        for (int i = 0 ; i<k;i++){
+            if (students[i].success){
+                sum++;
+            }
+        }
+        if (sum>k/2){
+            return true;
+        }
+        else{
+            return false;
+        }
+
+    }
+
+    public static void mergeSort(Student [] values,double[] grades) {
+        if(values.length == 1) // list of size 1, already sorted
+            return;
+
+        int mid = values.length/2;
+
+        Student [] left = new Student [mid];
+        Student [] right = new Student [values.length-mid];
+
+        // copy values[0..mid-1] to left
+        System.arraycopy(values, 0, left, 0, mid);
+        // copy values[mid..values.length-1] to right
+        System.arraycopy(values, mid, right, 0, values.length-mid);
+
+        // sort left and right
+        mergeSort(left,grades);
+        mergeSort(right,grades);
+
+        // merge left and right back into values
+        merge(left, right, values,grades);
+    }
+
+    private static void merge(Student[] left, Student [] right, Student result[],double[] grades) {
+        assert(result.length == left.length + right.length);
+        int index = 0, leftIndex = 0 , rightIndex = 0;
+        while (leftIndex != left.length || rightIndex != right.length) {
+            if (rightIndex == right.length ||
+                    (leftIndex != left.length && euclideanDistance(left[leftIndex].grades,grades) < euclideanDistance(right[rightIndex].grades,grades))) {
+                result[index] = left[leftIndex];
+                leftIndex++;
+            }
+            else {
+                result[index] = right[rightIndex];
+                rightIndex++;
+            }
+            index++;
+        }
     }
 
     public static double euclideanDistance(double[] a, double[] b) {

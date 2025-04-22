@@ -3,6 +3,7 @@ package oop;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Your task is to control a robot using a sequence of textual
@@ -101,6 +102,7 @@ public class RobotActionFactory {
         @Override
         public void apply(Robot robot) {
             // TODO Implement the body of this method
+            robot.moveForward();
         }
     }
 
@@ -112,6 +114,7 @@ public class RobotActionFactory {
         @Override
         public void apply(Robot robot) {
             // TODO Implement the body of this method
+            robot.turnLeft();
         }
     }
 
@@ -123,6 +126,7 @@ public class RobotActionFactory {
         @Override
         public void apply(Robot robot) {
             // TODO Implement the body of this method
+            robot.turnRight();
         }
     }
 
@@ -145,6 +149,9 @@ public class RobotActionFactory {
         @Override
         public void apply(Robot robot) {
             // TODO Implement the body of this method
+            for(int i =0;i< actions.size();i++){
+                actions.get(i).apply(robot);
+            }
         }
     }
 
@@ -171,6 +178,10 @@ public class RobotActionFactory {
         @Override
         public void apply(Robot robot) {
             // TODO Implement the body of this method
+            if (times==0) return;
+            for(int i = 0; i<times;i++){
+                action.apply(robot);
+            }
         }
     }
 
@@ -193,9 +204,82 @@ public class RobotActionFactory {
         SequenceOfActions sequence = new SequenceOfActions();
 
         // TODO Implement the body of this method by filling the "sequence" object
+        List<Integer> repeats = new ArrayList<>();
+        List<Integer> ends = new ArrayList<>();
+        for (int i = 0; i<commands.length;i++){
+            if ((commands[i].split(" "))[0].equals("REPEAT")){
+                repeats.add(i);
+            }
+            if (commands[i].equals("END REPEAT")){
+                ends.add(i);
+            }
+        }
+        if (repeats.size()!=ends.size()) throw new IllegalArgumentException();
+        List<SequenceOfActions> insideMind = new ArrayList<>();
+        insideMind.add(sequence);
+        List<Integer> times = new ArrayList<>();
+        for (int i =0;i<commands.length;i++){
+            if (commands[i].equals("FORWARD")) insideMind.get(insideMind.size()-1).add(new MoveForwardAction());
+            else if (commands[i].equals("RIGHT")) insideMind.get(insideMind.size()-1).add(new TurnRightAction());
+            else if (commands[i].equals("LEFT")) insideMind.get(insideMind.size()-1).add(new TurnLeftAction());
+            else if (commands[i].split(" ")[0].equals("REPEAT")) {
+                insideMind.add(new SequenceOfActions());
+                times.add(Integer.parseInt(commands[i].split(" ")[1]));
+            }
+            else if (commands[i].equals("END REPEAT")){
+                RepeatAction inside = new RepeatAction(times.get(times.size()-1),insideMind.get(insideMind.size()-1));
+                insideMind.remove(insideMind.size()-1);
+                times.remove(times.size()-1);
+                insideMind.get(insideMind.size()-1).add(inside);
+            }
+            else {
+                throw new IllegalArgumentException();
+            }
 
+        }
         return sequence;
     }
+    /**
+     *         List<Integer> repeats = new ArrayList<>();
+     *         List<Integer> ends = new ArrayList<>();
+     *         for (int i = 0; i<commands.length;i++){
+     *             if ((commands[i].split(" "))[0] == "REPEAT"){
+     *                 repeats.add(i);
+     *             }
+     *             if (commands[i]=="END REPEAT"){
+     *                 ends.add(i);
+     *             }
+     *         }
+     *         if (repeats.size()!=ends.size()) throw new IllegalArgumentException();
+     *         if (repeats.size()==0){
+     *             for(int i =0;i< commands.length;i++){
+     *                 if(commands[i]=="FORWARD") sequence.add(new MoveForwardAction());
+     *                 else if(commands[i]=="RIGHT") sequence.add(new TurnRightAction());
+     *                 else if(commands[i]=="LEFT") sequence.add(new TurnLeftAction());
+     *             }
+     *         }
+     *         else {
+     *             for (int i = 0; i < repeats.size(); i++) {
+     *                 if (repeats.get(repeats.size() - i) + 1 == ends.get(i)){
+     *                     continue;
+     *                 }
+     *                 else {
+     *                     SequenceOfActions inside = new SequenceOfActions();
+     *                     RepeatAction inside1;
+     *                     int cnt = 0;
+     *                     for (int j = repeats.get(repeats.size() - i) + 1; j < ends.get(i); j++) {
+     *                         if ((commands[j].split(" "))[0] == "REPEAT") cnt++ ;
+     *                         else if (commands[j]=="END REPEAT") cnt--;
+     *                         else if(commands[j]=="FORWARD" && cnt==0) inside.add(new MoveForwardAction());
+     *                         else if(commands[j]=="RIGHT" && cnt==0) inside.add(new TurnRightAction());
+     *                         else if(commands[j]=="LEFT" && cnt==0) inside.add(new TurnLeftAction());
+     *                     }
+     *                     inside1 = new RepeatAction(Integer.parseInt((commands[repeats.get(repeats.size() - i)].split(" "))[1]),inside);
+     *
+     *                 }
+     *             }
+     *         }
+     */
 
 
 

@@ -1,7 +1,10 @@
 package algorithms;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * This interface represents a collection of integers, similar to a set but allowing duplicates.
@@ -88,45 +91,50 @@ class BagImpl implements Bag {
     // Feel free to implement it using the data structure of your choice
     // or use any other class from the Java language to help you.
     // The time complexity of each method should be at most O(n) where n is the number of elements in the bag.
-
+    public List<Integer> mybag = new ArrayList<>();
 
     public BagImpl() {
-		// TODO
+        // TODO
     }
 
     @Override
     public void add(int o) {
-		// TODO
-
+        // TODO
+        mybag.add(o);
     }
 
     @Override
     public void remove(int o) {
-		// TODO
-
+        // TODO
+        int index = mybag.indexOf(o);
+        if (index >= 0) {
+            mybag.remove(index);
+        }
     }
 
     @Override
     public boolean isEmpty() {
-		// TODO
-         return false;
+        // TODO
+        return mybag.isEmpty();
     }
 
     @Override
     public int count(int o) {
-		// TODO
-         return 0;
+        // TODO
+        return (int) mybag.stream().filter(x->x==o).count();
     }
 
     @Override
     public Bag filter(Predicate<Integer> filter) {
-		// TODO
-         return null;
+        // TODO
+        BagImpl bag2 = new BagImpl();
+        for(Integer integer : mybag.stream().filter(filter).collect(Collectors.toList())) bag2.add(integer);
+        return bag2;
     }
 
     @Override
     public Iterator<Integer> iterator() {
-		// TODO
-         return null;
+        // TODO
+        return mybag.listIterator();
     }
 }

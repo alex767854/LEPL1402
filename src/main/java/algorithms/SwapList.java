@@ -23,9 +23,9 @@ interface SwapList {
      */
     void pop();
     /**
-    boolean isSorted();
+     boolean isSorted();
 
-    /**
+     /**
      * You have to sorts a list of integers in increasing order.
      * This ist is a bit special since you only have access to the first two elements.
      *
@@ -48,14 +48,22 @@ interface SwapList {
             // Invariant: the 'iter' biggest elements are at the end of the list and are sorted.
             // Example, at iteration iter=3, the three lasts elements are the three biggest elements in the list, and
             //  they are in the increasing order.
-
-            // TODO
-
+            for(int j =0;j<list.getSize() -1;j++){
+                if (list.getFirst()< list.getSecond()){
+                    list.pop();
+                }
+                else{
+                    list.swap();
+                    list.pop();
+                }
+            }
+            list.pop();
         }
 
         // Here, if you followed the invariant proposed above, the list should be sorted!
     }
 }
+
 
 
 

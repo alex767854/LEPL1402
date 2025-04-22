@@ -161,7 +161,61 @@ public class Pentago {
      */
     public Winner play(int i, int j, Player player, BoardSubpart subpart, RotationDirection direction) {
         // TODO
-         return null; // add your own code here
+        if (i>5 || j>5 || i<0 || j<0 || this.board[i][j]!=null){
+            throw new IllegalArgumentException();
+        }
+        else{
+            this.board[i][j] = player;
+        }
+        int d = 0;
+        if (direction == RotationDirection.RIGHT){
+            d = 1;
+        }
+        else {
+            d=3;
+        }
+        int[] s;
+        if(subpart==BoardSubpart.TOP_LEFT){
+            s = new int[]{0,0};
+        }
+        else if (subpart == BoardSubpart.TOP_RIGHT){
+            s = new int[]{0,3};
+        }
+        else if (subpart == BoardSubpart.BOTTOM_LEFT){
+            s = new int[]{3,0};
+        }
+        else{
+            s = new int[]{3,3};
+        }
+        Player[][] matrix = new Player[3][3];
+        for (int k = 0;k<3;k++){
+            for (int l = 0;l<3;l++){
+                matrix[k][l]=this.board[k+s[0]][l+s[1]];
+            }
+        }
+        Player[][] rmatrix =  rotateMatrix(matrix);
+        if (d==3){
+            rmatrix = rotateMatrix(rmatrix);
+            rmatrix = rotateMatrix(rmatrix);
+        }
+        for (int k = 0;k<3;k++){
+            for (int l = 0;l<3;l++){
+                this.board[k+s[0]][l+s[1]]= rmatrix[k][l];
+            }
+        }
+        if (checkWinPlayer(Player.A)&&checkWinPlayer(Player.B)){
+            return Winner.NO_WINNER;
+        }
+        else if (checkWinPlayer(Player.A)){
+            return Winner.A_WINS;
+        }
+        else if (checkWinPlayer(Player.B)){
+            return Winner.B_WINS;
+        }
+        else{
+            return Winner.NO_WINNER;
+        }
+
     }
 
 
@@ -179,7 +233,13 @@ public class Pentago {
      */
     public Player[][] rotateMatrix(Player[][] matrix) {
         // TODO
-         return null;
+        Player[][] result = new Player[matrix[0].length][matrix.length];
+        for(int i = 0;i<matrix.length;i++){
+            for(int j = 0 ; j<matrix[0].length;j++){
+                result[j][matrix.length - i-1] = matrix[i][j];
+            }
+        }
+        return result;
     }
 
     /**
@@ -192,7 +252,21 @@ public class Pentago {
      */
     public boolean checkWinPlayer(Player[] vector, Player player){
         // TODO
-         return false;
+        for (int i =0; i<vector.length-4;i++){
+            int sum = 0;
+            for(int j = 0; j<5;j++){
+                if (vector[i+j]==player){
+                    sum++;
+                }
+                else{
+                    break;
+                }
+            }
+            if(sum==5){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -202,6 +276,47 @@ public class Pentago {
      */
     private boolean checkWinPlayer(Player player) {
         // TODO
-         return false;
+        for (int i = 0;i<this.board.length;i++){
+            if (checkWinPlayer(this.board[i],player)){
+                return true;
+            }
+        }
+        Player[][] columns = rotateMatrix(this.board);
+        for (int i =0;i<columns.length;i++){
+            if (checkWinPlayer(columns[i],player)){
+                return true;
+            }
+        }
+        Player[] diag1 = new Player[6];
+        Player[] diag2 = new Player[6];
+        for (int i = 0 ; i< this.board.length;i++){
+            diag1[i]=this.board[i][i];
+            diag2[i]=this.board[i][this.board.length -1 - i];
+        }
+        if (checkWinPlayer(diag1,player) || checkWinPlayer(diag2,player)){
+            return true;
+        }
+        int sum1 = 0;
+        int sum2 = 0;
+        int sum3 = 0;
+        int sum4 = 0;
+        for (int i = 0; i<5;i++){
+            if (this.board[1+i][i]==player){
+                sum1++;
+            }
+            else if (this.board[i][i+1]==player){
+                sum2++;
+            }
+            else if (this.board[i][4-i]==player){
+                sum3++;
+            }
+            else if (this.board[i+1][5-i]==player){
+                sum4++;
+            }
+        }
+        if (sum1==5||sum2==5||sum3==5||sum4==5){
+            return true;
+        }
+        return false;
     }
 }

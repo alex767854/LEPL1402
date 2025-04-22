@@ -26,7 +26,7 @@ import java.util.List;
  *
  */
 public class BinarySearchTree {
-    
+
     private Node root;             // root of BST
 
     private class Node {
@@ -41,9 +41,9 @@ public class BinarySearchTree {
 
 
     public BinarySearchTree() {
-        
+
     }
- 
+
     public void insert(int key) {
         root = put(root, key);
     }
@@ -62,7 +62,18 @@ public class BinarySearchTree {
      */
     public List<Integer> decreasing() {
         // TODO
-         return null;
+        List<Integer> list = new LinkedList<>();
+        ReverseOrderCount(root,list);
+        return list;
+
+    }
+    private void ReverseOrderCount(Node current, List<Integer> list){
+        if (current == null){
+            return;
+        }
+        ReverseOrderCount(current.right,list);
+        list.add(current.key);
+        ReverseOrderCount(current.left,list);
     }
 
 

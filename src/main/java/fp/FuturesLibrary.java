@@ -1,10 +1,13 @@
 package fp;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  *  ***********
@@ -94,7 +97,27 @@ public class FuturesLibrary {
                                          int startBookIndex,
                                          int countBooks) {
         // TODO
-         return 0;
+
+        if (startBookIndex<0 || countBooks <0 || startBookIndex+countBooks> library.getNumberOfBooks()) throw new IllegalArgumentException();
+        if (countBooks==0) return 0;
+        return (int) Stream.iterate(startBookIndex,x->x+1)
+                .limit(countBooks)
+                .map(library::getBook)
+                .filter(predicate)
+                .count();
+        /*
+        Stream<Integer> numbers = Stream.iterate(0,x->x+1);
+        numbers = numbers.limit(library.getNumberOfBooks());
+        Stream<Book> stream = numbers.map(x->library.getBook(x));
+        stream = stream.skip(startBookIndex-1);
+        stream = stream.limit(countBooks);
+        for (int i =0;i<countBooks;i++){
+            Stream<Book> element = stream.limit(1);
+            if (element.noneMatch(predicate)) stream= stream.skip(1);
+        }
+         return (int) stream.count();
+
+         */
     }
 
     /**
@@ -123,8 +146,33 @@ public class FuturesLibrary {
         if (countThreads == 0) {
             throw new IllegalArgumentException();
         }
-
         // TODO
-         return 0;
+        int index = library.getNumberOfBooks()/countThreads;
+        int lastindex = library.getNumberOfBooks() -((countThreads)*index);
+        List<Future<Integer>> futures = new ArrayList<>();
+        for (int i =0;i<countThreads;i++){
+            final int current = i;
+            final int plus;
+            if (i==countThreads-1) plus = lastindex;
+            else plus = 0;
+            futures.add(executor.submit(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return countMatchingBooks(library,predicate,current*index,index+plus);
+                }
+            }));
+        }
+        int result =0;
+        try{
+            for (Future<Integer> future : futures){
+                result+=future.get();
+            }
+        } catch (InterruptedException e) {
+            return 0;
+        } catch (ExecutionException e) {
+            return 0;
+        }
+
+        return result;
     }
 }

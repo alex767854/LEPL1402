@@ -19,14 +19,22 @@ public class Fibonacci {
      * @return The nth Fibonacci number.
      * @throws IllegalArgumentException if n is negative.
      */
-     public static long fibonacci(long n) {
+    public static long fibonacci(long n) {
         if (n < 0) {
             throw new IllegalArgumentException("n should be non-negative");
         }
         if (n <= 1) {
             return n;
         }
-        return Math.addExact(fibonacci(n - 1) , fibonacci(n - 2)); // I use addExact to avoid silent overflow
-     }
+        long a = 1;
+        long b = 1;
+        long c;
+        for (int i =0;i<n-2;i++){
+            c = b;
+            b = a+b;
+            a = c;
+        }
+        return b;
+    }
 
 }

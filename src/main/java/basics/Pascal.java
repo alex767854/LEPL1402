@@ -72,9 +72,25 @@ public class Pascal {
      * @return the nth row of Pascal triangle
      */
     public static int[] pascal(int n) {
-         return null;
+        if (n==1){
+            return new int[]{1};
+        }
+        else if (n==2){
+            return new int []{1,1};
+        }
+        else {
+            int[] ligne1 = {1,1};
+            int[] ligne2 = null;
+            for (int i = 2 ; i<n;i++){
+                ligne2 = new int[i+1];
+                ligne2[0] = 1 ;
+                ligne2[ligne2.length -1] = 1;
+                for (int j = 0; j<i-1; j++){
+                    ligne2[j+1] = ligne1[j]+ligne1[j+1];
+                }
+                ligne1 = ligne2.clone();
+            }
+            return ligne2 ;
+        }
     }
-
-
-
 }

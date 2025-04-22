@@ -1,8 +1,7 @@
 package parallelization;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class ExamGrader {
 
@@ -49,7 +48,28 @@ public class ExamGrader {
      *  the list of questions is not empty.
      */
     public static int calculateExamGrade(ExamQuestion questions, RoundingFunction roundingFunction) {
-         return 0;
+        double cnt = 0;
+        ExamQuestion current = questions;
+        while (current != null){
+            cnt += current.getPointsObtained();
+            current = current.getNextQuestion();
+        }
+        int note = roundingFunction.roundGrade(cnt);
+        return note;
+    }
+
+    public static class CalculateExamCallable implements Callable<Integer> {
+        private ExamQuestion questions;
+        private RoundingFunction roundingFunction;
+
+        CalculateExamCallable (ExamQuestion questions,RoundingFunction roundingFunction){
+            this.questions = questions;
+            this.roundingFunction = roundingFunction;
+        }
+
+        public Integer call(){
+            return calculateExamGrade(questions,roundingFunction);
+        }
     }
 
 
@@ -67,6 +87,24 @@ public class ExamGrader {
      * Catch (and ignore) all exceptions.
      */
     public static int[] gradeExams(ExamQuestion exam1, ExamQuestion exam2, RoundingFunction roundingFunction) {
-         return null;
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        Future<Integer> future1 = executor.submit(new CalculateExamCallable(exam1,roundingFunction));
+        Future<Integer> future2 = executor.submit(new CalculateExamCallable(exam2,roundingFunction));
+        int[] result = new int[2];
+        try{
+            result[0] = future1.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        try{
+            result[1] = future2.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 }

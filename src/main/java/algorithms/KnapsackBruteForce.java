@@ -34,7 +34,25 @@ public class KnapsackBruteForce {
      * @return
      */
     public static int knapsack(Item[] items, int capacity) {
-         return -1;
+        return isSubsetSum(items, 0,0,0,capacity);
+
+    }
+
+
+    private static int isSubsetSum(Item[] arr, int i, int sum,int sumv, int capacity) {
+        // Base cases
+        if (i == arr.length) { // did not find it
+            return sum;
+        }
+        int exclude = isSubsetSum(arr,i+1,sum,sumv,capacity);
+        int include = 0;
+        if ( sumv + arr[i].weight <= capacity) { // found it
+            include = isSubsetSum(arr,i+1,sum+arr[i].value,sumv+arr[i].weight,capacity);
+        }
+
+        // Check if sum can be obtained by excluding / including the next
+        return Math.max(exclude,include);
+
     }
 
 

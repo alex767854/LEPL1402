@@ -2,13 +2,14 @@ package fp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observer;
 import java.util.function.Consumer;
 
 
 /**
  * ObservableCounter is a counter that can be
  * incremented with the increment() method.
- * The mehtod value() returns the number of calls
+ * The method value() returns the number of calls
  * to increment() since the creation of the counter.
  *
  * The counter can be observed with a functional programming
@@ -19,6 +20,8 @@ import java.util.function.Consumer;
 public class ObservableCounter {
 
     // TODO add instance variables
+    public int value=0;
+    public List<Consumer<Integer>> observers = new ArrayList<>();
 
     /**
      * Return the current value of the counter
@@ -27,7 +30,7 @@ public class ObservableCounter {
      */
     public synchronized int value() {
         // TODO
-         return -1;
+        return value;
     }
 
     /**
@@ -37,7 +40,9 @@ public class ObservableCounter {
      */
     public synchronized int increment() {
         // TODO
-         return -1;
+        value++;
+        for(Consumer<Integer> observer : observers)observer.accept(value);
+        return value;
     }
 
 
@@ -49,6 +54,7 @@ public class ObservableCounter {
      */
     public synchronized void onChange(Consumer<Integer> o) {
         // TODO
+        observers.add(o);
     }
 
     public static void main(String[] args) {

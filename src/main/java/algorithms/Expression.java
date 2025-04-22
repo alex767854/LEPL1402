@@ -26,7 +26,8 @@ public abstract class Expression {
      * @return the expression 'x'
      */
     public static Expression x() {
-         return null;
+
+        return new VariableExpression();
     }
 
     /**
@@ -34,7 +35,8 @@ public abstract class Expression {
      * @return the expression 'v'
      */
     public static Expression value(double v) {
-         return null;
+
+        return new ConstantExpression(v);
     }
 
     /**
@@ -43,7 +45,8 @@ public abstract class Expression {
      * @return the binary expression 'this + r'
      */
     public Expression plus(Expression r) {
-         return null;
+
+        return new BinaryExpression(this,r,"+");
     }
 
     /**
@@ -52,7 +55,8 @@ public abstract class Expression {
      * @return the binary expression 'this - r'
      */
     public Expression minus(Expression r) {
-         return null;
+
+        return new BinaryExpression(this,r,"-");
     }
 
     /**
@@ -61,7 +65,8 @@ public abstract class Expression {
      * @return the binary expression 'this * r'
      */
     public Expression mul(Expression r) {
-         return null;
+
+        return new BinaryExpression(this,r,"*");
     }
 
     /**
@@ -76,6 +81,81 @@ public abstract class Expression {
      * @return the derivative of the expression with respect to 'x'
      */
     public abstract Expression derivate();
+
+    public static class ConstantExpression extends Expression {
+
+        private final double value;
+
+        public ConstantExpression(double value){
+            this.value = value;
+        }
+
+        @Override
+        public double evaluate(double xValue){
+            return value;
+        }
+
+        @Override
+        public Expression derivate(){
+            return Expression.value(0);
+        }
+    }
+
+    public static class VariableExpression extends Expression {
+        @Override
+        public double evaluate(double xValue){
+            return xValue;
+        }
+
+        @Override
+        public Expression derivate(){
+            return Expression.value(1);
+        }
+    }
+
+    public class BinaryExpression extends Expression {
+        private final Expression left;
+        private final Expression right;
+        private final String operator;
+
+        public BinaryExpression(Expression left,Expression right,String operator){
+            this.left = left;
+            this.right = right;
+            this.operator = operator;
+        }
+
+        @Override
+        public double evaluate(double xValue){
+            double lvalue = left.evaluate(xValue);
+            double rvalue = right.evaluate(xValue);
+            switch (operator){
+                case "+":
+                    return lvalue + rvalue;
+                case "-":
+                    return lvalue - rvalue;
+                case "*":
+                    return lvalue * rvalue;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
+
+        @Override
+        public Expression derivate(){
+            switch (operator){
+                case "+":
+                    return left.derivate().plus(right.derivate());
+                case "-":
+                    return left.derivate().minus(right.derivate());
+                case "*":
+                    return (left.derivate().mul(right)).plus(left.mul(right.derivate()));
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
+
+
+    }
 
 
 

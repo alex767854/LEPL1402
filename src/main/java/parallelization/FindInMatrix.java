@@ -2,10 +2,7 @@ package parallelization;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class FindInMatrix {
     // You are allowed to add methods or class members, but do not change the signature
@@ -27,6 +24,24 @@ public class FindInMatrix {
 
         public List<Integer> getColumns() {
             return columns;
+        }
+    }
+
+    public static class CountValuesCallable implements Callable<List<Integer>>{
+        private int[] row;
+        private int value;
+
+        CountValuesCallable (int[] row,int value){
+            this.row = row;
+            this.value = value;
+        }
+
+        public List<Integer> call() {
+            List<Integer> index = new ArrayList<>();
+            for (int i = 0; i< row.length;i++){
+                if (row[i]==value) index.add(i);
+            }
+            return index;
         }
     }
 
@@ -60,7 +75,35 @@ public class FindInMatrix {
         // TODO
         // Hint:
         // One row of the matrix -> One future.
+        ExecutorService executor = Executors.newFixedThreadPool(poolSize);
+        List<Future<List<Integer>>> futures = new ArrayList<>();
+        for (int i = 0;i< matrix.length;i++){
+            futures.add(executor.submit(new CountValuesCallable(matrix[i],value)));
+        }
+        int cnt = 0;
+        int index = 0;
+        for (int i = 0; i< futures.size();i++){
+            try{
+                if (futures.get(i).get().size()>cnt){
+                    cnt = futures.get(i).get().size();
+                    index = i;
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
 
-         return null;
+        }
+        Result result;
+        try {
+            result = new Result(index,futures.get(index).get());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+        executor.shutdown();
+        return result;
     }
 }

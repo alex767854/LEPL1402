@@ -26,7 +26,7 @@ public abstract class DecisionTree {
      *               \
      *                T
      *
-     * [F,T,T,F,F] would receive the prediction label T and the path followed would be:
+     * [F,T,T,F,F] would receive the prediction label F and the path followed would be:
      *                 4
      *                  \
      *                   T
@@ -51,7 +51,10 @@ public abstract class DecisionTree {
      *         the feature at featureIndex is true, the right tree is used otherwise
      */
     public static DecisionTree splitNode(int featureIndex, DecisionTree left, DecisionTree right) {
-         return null;
+
+        DecisionTree result = new mini(featureIndex,left,right);
+        return result;
+
     }
 
     /**
@@ -60,7 +63,41 @@ public abstract class DecisionTree {
      * @return a decision tree that always predicts label
      */
     public static DecisionTree decisionNode(boolean label) {
-         return null;
+        return new leaf(label);
+    }
+
+    public static class leaf extends DecisionTree {
+        public boolean label;
+
+        public leaf (boolean label){
+            this.label = label;
+        }
+
+        @Override
+        public boolean predict(boolean [] features){
+            return label;
+        }
+    }
+    public static class mini extends DecisionTree {
+        public int value;
+        public DecisionTree left;
+        public DecisionTree right;
+
+        public mini (int value, DecisionTree left, DecisionTree right){
+            this.value = value;
+            this.left = left;
+            this.right = right;
+        }
+
+        @Override
+        public boolean predict(boolean [] features){
+            if (features[value]){
+                return left.predict(features);
+            }
+            else{
+                return right.predict(features);
+            }
+        }
     }
 
 }

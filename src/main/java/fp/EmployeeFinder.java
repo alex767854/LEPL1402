@@ -1,10 +1,8 @@
 package fp;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.List;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 public class EmployeeFinder {
@@ -52,7 +50,15 @@ public class EmployeeFinder {
      */
     public static Employee findBestEmployee(ArrayList<Employee> employees, Function<Employee, Float> scoreFunction) {
         // TODO
-         return null;
+        float currentscore = scoreFunction.apply(employees.get(0));
+        Employee currentemployee = employees.get(0);
+        for (Employee employee : employees){
+            if(scoreFunction.apply(employee)<currentscore){
+                currentscore = scoreFunction.apply(employee);
+                currentemployee = employee;
+            }
+        }
+        return currentemployee;
     }
 
     /**
@@ -80,6 +86,29 @@ public class EmployeeFinder {
      */
     public static Employee findBestEmployee(Company company, Function<Employee, Float> scoreFunction) {
         // TODO
-         return null;
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        List<Future<Employee>> futures = new ArrayList<>();
+        for (int i =0;i<2;i++){
+            final ArrayList<Employee> employees;
+            if (i ==0) employees = company.departmentA;
+            else employees = company.departmentB;
+            futures.add(executor.submit(new Callable<Employee>() {
+                @Override
+                public Employee call() throws Exception {
+                    return findBestEmployee(employees,scoreFunction);
+                }
+            }));
+        }
+
+        Employee result;
+        try {
+            if (scoreFunction.apply(futures.get(0).get())<=scoreFunction.apply(futures.get(1).get())) result = futures.get(0).get();
+            else result = futures.get(1).get();
+        } catch (Exception e) {
+            return null;
+        } catch (Throwable e) {
+            return null;
+        }
+        return result;
     }
 }

@@ -44,8 +44,11 @@ public class RecursiveStack<E>  implements Iterable<E> {
      * @return the new stack
      */
     public RecursiveStack<E> add(E e) {
-		 return null;
+        // STUDENT return null;
         // TODO
+        // BEGIN STRIP
+        return new RecursiveStack<>(e,this);
+        // END STRIP
     }
 
     /**
@@ -56,7 +59,11 @@ public class RecursiveStack<E>  implements Iterable<E> {
      */
     public E top() {
         // TODO
-         return null;
+        // STUDENT return null;
+        // BEGIN STRIP
+        if (size() == 0) throw new EmptyStackException();
+        return e;
+        // END STRIP
     }
 
     /**
@@ -67,7 +74,11 @@ public class RecursiveStack<E>  implements Iterable<E> {
      */
     public RecursiveStack<E> removeTop() {
         // TODO
-         return null;
+        // STUDENT return null;
+        // BEGIN STRIP
+        if (size() == 0) throw new EmptyStackException();
+        return next;
+        // END STRIP
     }
 
     /**
@@ -77,7 +88,10 @@ public class RecursiveStack<E>  implements Iterable<E> {
      */
     public int size() {
         // TODO
-         return -1;
+        // STUDENT return -1;
+        // BEGIN STRIP
+        return next == null ? 0 : 1+next.size();
+        // END STRIP
     }
 
     /**
@@ -88,7 +102,15 @@ public class RecursiveStack<E>  implements Iterable<E> {
      */
     public RecursiveStack<E> reverse() {
         // TODO
-         return null;
+        // STUDENT return null;
+        // BEGIN STRIP
+        if (next == null) return this;
+        RecursiveStack<E> s_ = new RecursiveStack<>();
+        for (E e: this) {
+            s_ = s_.add(e);
+        }
+        return s_;
+        // END STRIP;
     }
 
     /**
@@ -100,9 +122,30 @@ public class RecursiveStack<E>  implements Iterable<E> {
     @Override
     public Iterator<E> iterator() {
         // TODO: think about implementing an inner class
-         return null;
+        // STUDENT return null;
+        // BEGIN STRIP
+        return new StackIterator();
+        // END STRIP
     }
 
+    // BEGIN STRIP
+    private class StackIterator implements Iterator<E> {
+
+        RecursiveStack<E> s = RecursiveStack.this;
+
+        @Override
+        public boolean hasNext() {
+            return s.next != null;
+        }
+
+        @Override
+        public E next() {
+            E e = s.e;
+            s = s.next;
+            return e;
+        }
+    }
+    // END STRIP
 
 
 }

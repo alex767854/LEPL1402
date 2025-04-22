@@ -33,7 +33,14 @@ public class MedianOfPairs {
      */
     public static Pair median(List<Pair> list) {
         // TODO
-         return null;
+        for (int i =0; i<list.size()-1;i++){
+            for(int j = 0;j<list.size()-i-1;j++){
+                if (list.get(j).first==list.get(j+1).first && list.get(j).second>list.get(j+1).second || list.get(j).first>list.get(j+1).first){
+                    Collections.swap(list,j,j+1);
+                }
+            }
+        }
+        return list.get(list.size()/2);
     }
 
     public static class Pair {

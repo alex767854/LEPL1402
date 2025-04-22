@@ -1,5 +1,9 @@
 package fp;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -79,7 +83,30 @@ public class BrickCounter {
      */
     public static int[] countBricks(Brick[] bricks, int n, Function<Brick, Integer> sorter) {
         // TODO
-         return null;
+        int[] result = new int[n];
+        for (Brick brick : bricks){
+            result[sorter.apply(brick)]++;
+        }
+        return result;
+    }
+
+
+    public static class BrickCallable implements Callable<int[]>{
+        private Brick[] bricks;
+        private int n;
+        private Function<Brick,Integer> sorter;
+
+        BrickCallable(Brick[] bricks,int n,Function<Brick,Integer> sorter){
+            this.bricks = bricks;
+            this.n = n;
+            this.sorter =sorter;
+        }
+
+
+        @Override
+        public int[] call(){
+            return countBricks(bricks,n,sorter);
+        }
     }
 
 
@@ -127,6 +154,36 @@ public class BrickCounter {
     public static int[] countBricksTwoThreads(Brick[] bricks, int n, Function<Brick, Integer> sorter,
                                               ExecutorService executor) {
         // TODO
-         return null;
+
+        Brick[][] brickss = new Brick[2][];
+        brickss[0] = Arrays.copyOfRange(bricks,0,bricks.length /2);
+        brickss[1] = Arrays.copyOfRange(bricks,bricks.length /2 ,bricks.length );
+        List<Future<int[]>> futures = new ArrayList<>();
+        for (int i =0;i<2;i++){
+            futures.add(executor.submit(new BrickCallable(brickss[i],n,sorter)));
+        }
+        int[] result = new int[n];
+        int[] result1;
+        int[] result2;
+        try{
+            result1 = futures.get(0).get();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try{
+            result2 = futures.get(1).get();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int i = 0;i<n;i++){
+            result[i] = result1[i]+result2[i];
+        }
+        return result;
+
     }
 }

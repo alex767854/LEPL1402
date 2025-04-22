@@ -45,8 +45,27 @@ public class QRcode {
      */
     @Override
     public boolean equals(Object o) {
-        // TODO
-         return false;
+        if (o == null || getClass() != o.getClass() ){
+            return false ;
+        }
+        QRcode cast = (QRcode) o ;
+        boolean[][] temp = cast.data ;
+        if (Arrays.deepEquals(this.data, temp)){return true;}
+        for (int i =0;i<3;i++){
+            if (Arrays.deepEquals(this.data, temp = rotate(temp))){
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean[][] rotate(boolean[][] matrix) {
+        boolean[][] m = new boolean[matrix.length][matrix.length];
+        for (int i = 0 ; i< matrix.length;i++){
+            for (int j = 0 ; j< matrix.length;j++){
+                m[i][j]= matrix[matrix.length -1 - j][i];
+            }
+        }
+        return m;
     }
 
 
