@@ -1,5 +1,5 @@
 # Programming Concepts in Java: Exercices
-Ce dépôt contient mes solutions aux exercices du cours **LEPL1402 - Concepts de Programmation** à l'[UCLouvain](https://uclouvain.be), en deuxième année, Q3.
+Ce dépôt contient mes solutions aux exercices du cours [**LEPL1402 - Informatique 2** à l'UCLouvain](https://uclouvain.be/cours-2024-lepl1402), en deuxième année, Q3.
 Les tests sont présents donc n'hésites pas à run pour vérifier les solutions.
 
 ## ⚙️ Instructions d'utilisation
